@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import type { User, HolidayCalendar, AppSettings } from '../types';
 import { Role, EmployeeType } from '../types';
@@ -152,9 +153,9 @@ const Dashboard: React.FC = () => {
     );
 
     return (
-        <div className="h-screen flex bg-brand-bg dark:bg-gray-900 transition-colors duration-200 overflow-hidden">
+        <div className="h-screen w-screen flex bg-brand-bg dark:bg-gray-900 transition-colors duration-200 overflow-hidden">
             {/* SIDEBAR */}
-            <aside className="w-64 bg-brand-surface dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shrink-0">
+            <aside className="w-64 bg-brand-surface dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shrink-0 z-10">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
                     <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400 truncate">{appSettings.companyName}</span>
                 </div>
@@ -203,7 +204,7 @@ const Dashboard: React.FC = () => {
             </aside>
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 p-8 overflow-y-auto">
+            <main className="flex-1 p-8 overflow-y-auto bg-brand-bg dark:bg-gray-900 relative">
                 <header className="mb-8 flex justify-between items-start">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
@@ -214,7 +215,7 @@ const Dashboard: React.FC = () => {
                         </p>
                     </div>
                     {appSettings.logoUrl && (
-                        <div className="bg-brand-surface dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="bg-brand-surface dark:bg-gray-800 p-2 rounded-lg shadow-sm">
                             <img src={appSettings.logoUrl} alt="Company Logo" className="h-12 w-auto object-contain" />
                         </div>
                     )}
