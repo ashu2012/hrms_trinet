@@ -1,9 +1,8 @@
-
 import { GoogleGenAI, GenerateContentResponse, Type, Modality, Chat } from "@google/genai";
-// FIX: Import EmployeeType enum to use its values.
 import { EmployeeType, type KycFormData, type UploadedFile, type VerificationResult, type LeavePolicy, type User } from '../types';
 
-const API_KEY = process.env.API_KEY;
+// Safely access process.env to avoid "Uncaught ReferenceError: process is not defined" in browser
+const API_KEY = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : '';
 
 if (!API_KEY) {
   console.warn("API_KEY environment variable not set. Using a placeholder. AI features will not work.");
@@ -32,7 +31,6 @@ export const analyzeKycDocument = async (
   };
 
   const textPart = {
-    // FIX: Removed JSON instructions from prompt as responseSchema is now used.
     text: `Analyze this KYC document. Extract the full name, full address, and document ID number. Compare the extracted information with the following user-submitted data:
     - Full Name: ${userFormData.fullName}
     - Address: ${userFormData.address}
@@ -45,7 +43,6 @@ export const analyzeKycDocument = async (
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts: [imagePart, textPart] },
-      // FIX: Use responseSchema to enforce JSON output structure for more reliable parsing.
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -110,9 +107,7 @@ export const createLeavePolicyFromText = async (description: string): Promise<Le
     return {
         policyName: "Mock Generated Policy",
         rules: [
-            // FIX: Use EmployeeType enum instead of string literals to fix type error.
             { employeeType: EmployeeType.FULL_TIME, probationMonths: 3, paidLeaveDays: 12, unpaidLeaveDays: 5, accrualRatePerMonth: 1 },
-            // FIX: Use EmployeeType enum instead of string literals to fix type error.
             { employeeType: EmployeeType.CONTRACT, probationMonths: 0, paidLeaveDays: 0, unpaidLeaveDays: 10, accrualRatePerMonth: 0 }
         ]
     };
