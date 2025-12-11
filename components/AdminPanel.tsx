@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import type { User } from '../types';
 import { Role } from '../types';
@@ -38,7 +37,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ users, currentUser, onUpdateUse
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-brand-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredUsers.map(user => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">

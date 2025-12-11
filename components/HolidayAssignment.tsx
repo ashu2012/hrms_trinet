@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import type { User, HolidayCalendar } from '../types';
 import Card from './common/Card';
@@ -75,7 +74,7 @@ const HolidayAssignment: React.FC<HolidayAssignmentProps> = ({ users, calendars,
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Current Calendar</th>
                     </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-brand-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredUsers.map(user => (
                         <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td className="p-4">

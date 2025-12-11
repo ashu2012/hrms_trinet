@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { User, LeaveRequest, Holiday, HolidayCalendar, Project, TimesheetEntry } from '../types';
 import { Role, EmployeeType, LeaveStatus } from '../types';
@@ -187,7 +186,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                     <Card title="Leave History">
                          <div className="space-y-2 max-h-80 overflow-y-auto">
                             {leaveRequests.filter(r => r.userId === user.id).map(req => (
-                                <div key={req.id} className="p-3 border dark:border-gray-700 rounded-md flex justify-between">
+                                <div key={req.id} className="p-3 border border-gray-100 dark:border-gray-700 rounded-md flex justify-between bg-white dark:bg-gray-800/50">
                                     <div className="text-sm"><p className="font-semibold dark:text-gray-200">{req.startDate} - {req.endDate}</p><p className="text-gray-500 dark:text-gray-400">{req.leaveType}</p></div>
                                     <span className={`px-2 py-1 text-xs rounded-full h-fit ${req.status === 'Approved' ? 'bg-green-100 text-green-800' : req.status === 'Rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>{req.status}</span>
                                 </div>
@@ -210,7 +209,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                     </div>
                     <div className="space-y-2">
                         {holidays.filter(h => h.calendarId === user.holidayCalendarId && (holidayFilter === 'All' || h.applicableTo.includes(holidayFilter))).map(h => (
-                            <div key={h.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded flex justify-between"><span className="font-medium dark:text-gray-200">{h.name}</span><span className="text-gray-500 dark:text-gray-400">{h.date}</span></div>
+                            <div key={h.id} className="p-3 bg-white border border-gray-100 dark:border-gray-700 dark:bg-gray-700/50 rounded flex justify-between"><span className="font-medium dark:text-gray-200">{h.name}</span><span className="text-gray-500 dark:text-gray-400">{h.date}</span></div>
                         ))}
                     </div>
                 </Card>
@@ -255,7 +254,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="bg-brand-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {timesheets.filter(t => t.userId === user.id).map(ts => (
                                         <tr key={ts.id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{ts.date}</td>
@@ -279,7 +278,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                     <Card title="Team Leave Requests">
                          {leaveRequests.filter(r => (user.teamMemberIds || []).includes(r.userId) && r.status === 'Pending').length === 0 ? <p className="text-gray-500 dark:text-gray-400">No pending leave requests.</p> : 
                          leaveRequests.filter(r => (user.teamMemberIds || []).includes(r.userId) && r.status === 'Pending').map(req => (
-                            <div key={req.id} className="p-4 border dark:border-gray-700 rounded mb-2 flex justify-between items-center bg-white dark:bg-gray-800">
+                            <div key={req.id} className="p-4 border border-gray-100 dark:border-gray-700 rounded mb-2 flex justify-between items-center bg-white dark:bg-gray-800">
                                 <div><p className="font-bold dark:text-gray-200">{usersById.get(req.userId)?.name}</p><p className="text-sm dark:text-gray-400">{req.startDate} to {req.endDate} ({req.reason})</p></div>
                                 <div className="space-x-2"><button onClick={() => handleUpdateRequestStatus(req.id, LeaveStatus.APPROVED)} className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">Approve</button><button onClick={() => handleUpdateRequestStatus(req.id, LeaveStatus.REJECTED)} className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700">Reject</button></div>
                             </div>
@@ -299,7 +298,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="bg-brand-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {timesheets.filter(t => (user.teamMemberIds || []).includes(t.userId) && t.status === 'Pending').map(ts => (
                                         <tr key={ts.id}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{usersById.get(ts.userId)?.name}</td>

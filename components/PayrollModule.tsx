@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { User, Payslip, Reimbursement } from '../types';
 import Card from './common/Card';
@@ -44,7 +43,7 @@ const PayrollModule: React.FC<PayrollModuleProps> = ({ user }) => {
     const renderPayslips = () => (
         <div className="space-y-4">
             {MOCK_PAYSLIPS.map(slip => (
-                <div key={slip.id} className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+                <div key={slip.id} className="bg-brand-surface dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex justify-between items-center mb-4 border-b pb-2 dark:border-gray-700">
                         <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{slip.month} {slip.year} Payslip</h3>
                         <span className="text-sm text-gray-500 dark:text-gray-400">ID: {slip.id}</span>
@@ -72,17 +71,17 @@ const PayrollModule: React.FC<PayrollModuleProps> = ({ user }) => {
                 <form onSubmit={handleAddReimbursement} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                        <select value={remCategory} onChange={(e) => setRemCategory(e.target.value)} className="mt-1 w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                        <select value={remCategory} onChange={(e) => setRemCategory(e.target.value)} className="mt-1 w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                             <option>Travel</option><option>Food</option><option>Internet</option><option>Other</option>
                         </select>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount ($)</label>
-                        <input type="number" value={remAmount} onChange={(e) => setRemAmount(e.target.value)} required className="mt-1 w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
+                        <input type="number" value={remAmount} onChange={(e) => setRemAmount(e.target.value)} required className="mt-1 w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                        <input type="text" value={remDesc} onChange={(e) => setRemDesc(e.target.value)} required className="mt-1 w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
+                        <input type="text" value={remDesc} onChange={(e) => setRemDesc(e.target.value)} required className="mt-1 w-full p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
                     </div>
                     <button type="submit" className="w-full flex justify-center items-center py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                         <PlusIcon className="h-5 w-5 mr-1" /> Submit Claim
@@ -100,7 +99,7 @@ const PayrollModule: React.FC<PayrollModuleProps> = ({ user }) => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody className="bg-brand-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {reimbursements.map(r => (
                                 <tr key={r.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{r.date}</td>
@@ -128,7 +127,7 @@ const PayrollModule: React.FC<PayrollModuleProps> = ({ user }) => {
                 <div>
                     <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Declare Investments (80C)</h4>
                     <div className="flex gap-2">
-                        <input type="text" placeholder="Investment Amount" className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
+                        <input type="text" placeholder="Investment Amount" className="flex-1 p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"/>
                         <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 dark:bg-gray-600">Update</button>
                     </div>
                 </div>

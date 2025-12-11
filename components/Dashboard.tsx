@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import type { User, HolidayCalendar, AppSettings } from '../types';
 import { Role, EmployeeType } from '../types';
@@ -153,21 +152,21 @@ const Dashboard: React.FC = () => {
     );
 
     return (
-        <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="h-screen flex bg-brand-bg dark:bg-gray-900 transition-colors duration-200 overflow-hidden">
             {/* SIDEBAR */}
-            <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed h-full z-10">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <aside className="w-64 bg-brand-surface dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shrink-0">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
                     <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400 truncate">{appSettings.companyName}</span>
                 </div>
                 
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
                     {NAV_ITEMS.filter(item => item.allowedRoles.includes(user.role)).map((item) => {
                         const Icon = item.icon;
                         return (
                             <button 
                                 key={item.id}
                                 onClick={() => navigateTo(item.id)} 
-                                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md ${activeModule === item.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${activeModule === item.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                             >
                                 <Icon className="mr-3 h-5 w-5" /> {item.label}
                             </button>
@@ -175,7 +174,7 @@ const Dashboard: React.FC = () => {
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700 shrink-0">
                     <div className="flex items-center space-x-3 mb-4">
                          <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold flex-shrink-0">
                             {user.name.charAt(0)}
@@ -185,7 +184,7 @@ const Dashboard: React.FC = () => {
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
                         </div>
                     </div>
-                     <button onClick={toggleTheme} className="w-full flex items-center justify-center p-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
+                     <button onClick={toggleTheme} className="w-full flex items-center justify-center p-2 rounded-md bg-white border border-gray-200 dark:border-gray-600 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-sm">
                         {theme === 'light' ? <><MoonIcon className="h-4 w-4 mr-2" /> Dark Mode</> : <><SunIcon className="h-4 w-4 mr-2" /> Light Mode</>}
                     </button>
                     
@@ -195,7 +194,7 @@ const Dashboard: React.FC = () => {
                          <select 
                             value={user.role} 
                             onChange={(e) => handleRoleChange(e.target.value as Role)}
-                            className="w-full text-xs p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                            className="w-full text-xs p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 shadow-sm"
                         >
                             {Object.values(Role).map(r => <option key={r} value={r}>{r}</option>)}
                          </select>
@@ -204,7 +203,7 @@ const Dashboard: React.FC = () => {
             </aside>
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 ml-64 p-8 overflow-y-auto relative">
+            <main className="flex-1 p-8 overflow-y-auto">
                 <header className="mb-8 flex justify-between items-start">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
@@ -215,7 +214,7 @@ const Dashboard: React.FC = () => {
                         </p>
                     </div>
                     {appSettings.logoUrl && (
-                        <div className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+                        <div className="bg-brand-surface dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                             <img src={appSettings.logoUrl} alt="Company Logo" className="h-12 w-auto object-contain" />
                         </div>
                     )}
