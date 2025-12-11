@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import type { User, LeaveRequest, Holiday, HolidayCalendar, Project, TimesheetEntry } from '../types';
 import { Role, EmployeeType, LeaveStatus } from '../types';
 import Card from './common/Card';
@@ -8,6 +9,7 @@ import { playAudio } from '../utils/helpers';
 import PlusIcon from './icons/PlusIcon';
 import CheckCircleIcon from './icons/CheckCircleIcon';
 import XCircleIcon from './icons/XCircleIcon';
+import ClockIcon from './icons/ClockIcon';
 
 interface WorkforceModuleProps {
     user: User;
@@ -46,7 +48,7 @@ const MOCK_TIMESHEETS: TimesheetEntry[] = [
 ];
 
 const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, theme }) => {
-    const [activeSubTab, setActiveSubTab] = useState<'leave' | 'holidays' | 'timesheets' | 'team'>('leave');
+    const [activeSubTab, setActiveSubTab] = useState<'leave' | 'holidays' | 'timesheets' | 'team' | 'attendance'>('leave');
     
     // --- Leave State ---
     const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(MOCK_INITIAL_LEAVE_REQUESTS);
@@ -69,6 +71,9 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
     const [tsProjectId, setTsProjectId] = useState(MOCK_PROJECTS[0].id);
     const [tsHours, setTsHours] = useState('');
     const [tsDesc, setTsDesc] = useState('');
+
+    // --- Attendance State ---
+    const [attendanceDate, setAttendanceDate] = useState(new Date());
 
     // --- Leave Handlers ---
     const handleLeaveSubmit = async (e: React.FormEvent, bypassHolidayCheck = false) => {
@@ -153,6 +158,89 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
         setTimesheets(prev => prev.map(ts => ts.id === tsId ? { ...ts, status } : ts));
     };
 
+    // --- Attendance Logic ---
+    const renderAttendance = () => {
+        const year = attendanceDate.getFullYear();
+        const month = attendanceDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+        const blanks = Array(firstDayIndex).fill(null);
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        // Mock Attendance Status Generator
+        const getStatus = (day: number) => {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateObj = new Date(year, month, day);
+            const dayOfWeek = dateObj.getDay();
+
+            // Check if holiday
+            const isHoliday = holidays.some(h => h.date === dateStr && h.calendarId === user.holidayCalendarId);
+            if (isHoliday) return 'Holiday';
+
+            // Check if weekend (Sat/Sun)
+            if (dayOfWeek === 0 || dayOfWeek === 6) return 'Weekend';
+
+            // Randomize Present/Absent/Leave for past dates, Future is empty
+            if (dateObj > new Date()) return '';
+            
+            // Deterministic mock based on day number
+            if (day % 10 === 0) return 'Leave';
+            if (day % 15 === 0) return 'Absent';
+            
+            return 'Present';
+        };
+
+        const getStatusColor = (status: string) => {
+            switch (status) {
+                case 'Present': return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 border-green-200 dark:border-green-800';
+                case 'Absent': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-800';
+                case 'Leave': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
+                case 'Holiday': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+                case 'Weekend': return 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-600';
+                default: return 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+            }
+        };
+
+        const changeMonth = (delta: number) => {
+            setAttendanceDate(new Date(year, month + delta, 1));
+        };
+
+        return (
+            <Card title="My Attendance">
+                 <div className="flex justify-between items-center mb-6">
+                    <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">&lt; Prev</button>
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{attendanceDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
+                    <button onClick={() => changeMonth(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">Next &gt;</button>
+                </div>
+
+                <div className="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                    {weekdays.map(d => <div key={d}>{d}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                    {blanks.map((_, i) => <div key={`blank-${i}`} className="h-24 md:h-32"></div>)}
+                    {days.map(day => {
+                        const status = getStatus(day);
+                        return (
+                            <div key={day} className={`h-24 md:h-32 border rounded-lg p-2 flex flex-col justify-between transition-colors ${getStatusColor(status)}`}>
+                                <span className="font-semibold">{day}</span>
+                                {status && <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/50 dark:bg-black/20 text-center mx-auto w-full truncate">{status}</span>}
+                            </div>
+                        );
+                    })}
+                </div>
+                
+                <div className="mt-6 flex flex-wrap gap-4 justify-center">
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500"></span><span className="text-sm text-gray-600 dark:text-gray-400">Present</span></div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500"></span><span className="text-sm text-gray-600 dark:text-gray-400">Absent</span></div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-yellow-500"></span><span className="text-sm text-gray-600 dark:text-gray-400">Leave</span></div>
+                    <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500"></span><span className="text-sm text-gray-600 dark:text-gray-400">Holiday</span></div>
+                     <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-400"></span><span className="text-sm text-gray-600 dark:text-gray-400">Weekend</span></div>
+                </div>
+            </Card>
+        );
+    };
+
     // --- Render Helpers ---
     const HolidayOverlapWarning = () => (<div className="p-4 rounded-md bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700/50 my-4"><h3 className="text-sm font-bold text-yellow-800 dark:text-yellow-200">Holiday Overlap Detected</h3><div className="mt-3 flex space-x-2"><button onClick={(e) => handleLeaveSubmit(e, true)} className="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700">Confirm & Submit</button><button onClick={() => setOverlappingHolidays(null)} className="px-3 py-1.5 text-xs font-medium rounded-md text-yellow-800 dark:text-yellow-100 bg-yellow-200 dark:bg-yellow-800/50 hover:bg-yellow-300 dark:hover:bg-yellow-800">Cancel</button></div></div>);
 
@@ -161,6 +249,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
             <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
                 <nav className="-mb-px flex space-x-8 overflow-x-auto">
                     <button onClick={() => setActiveSubTab('leave')} className={`${activeSubTab === 'leave' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Leave Management</button>
+                    <button onClick={() => setActiveSubTab('attendance')} className={`${activeSubTab === 'attendance' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Attendance</button>
                     <button onClick={() => setActiveSubTab('timesheets')} className={`${activeSubTab === 'timesheets' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Projects & Timesheets</button>
                     <button onClick={() => setActiveSubTab('holidays')} className={`${activeSubTab === 'holidays' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Holidays</button>
                     {[Role.MANAGER, Role.HR_MANAGER, Role.ADMIN].includes(user.role) && <button onClick={() => setActiveSubTab('team')} className={`${activeSubTab === 'team' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Team Approvals</button>}
@@ -196,6 +285,9 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                 </div>
             )}
 
+            {/* ATTENDANCE TAB */}
+            {activeSubTab === 'attendance' && renderAttendance()}
+
             {/* HOLIDAYS TAB */}
             {activeSubTab === 'holidays' && (
                 [Role.HR_MANAGER, Role.ADMIN].includes(user.role) ? 
@@ -209,7 +301,7 @@ const WorkforceModule: React.FC<WorkforceModuleProps> = ({ user, usersById, them
                     </div>
                     <div className="space-y-2">
                         {holidays.filter(h => h.calendarId === user.holidayCalendarId && (holidayFilter === 'All' || h.applicableTo.includes(holidayFilter))).map(h => (
-                            <div key={h.id} className="p-3 bg-white border border-gray-100 dark:border-gray-700 dark:bg-gray-700/50 rounded flex justify-between"><span className="font-medium dark:text-gray-200">{h.name}</span><span className="text-gray-500 dark:text-gray-400">{h.date}</span></div>
+                            <div key={h.id} className="p-3 bg-white border border-gray-100 dark:border-gray-700 dark:bg-gray-700/50 rounded flex justify-between"><span className="font-medium text-gray-900 dark:text-gray-200">{h.name}</span><span className="text-gray-500 dark:text-gray-400">{h.date}</span></div>
                         ))}
                     </div>
                 </Card>
