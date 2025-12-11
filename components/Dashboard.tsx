@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { User, HolidayCalendar, AppSettings } from '../types';
 import { Role, EmployeeType } from '../types';
 import PolicyEngine from './PolicyEngine';
@@ -14,6 +14,7 @@ import PayrollModule from './PayrollModule';
 import PerformanceModule from './PerformanceModule';
 import OnboardingModule from './OnboardingModule';
 import WorkforceModule from './WorkforceModule';
+import Documentation from './Documentation';
 
 // Icons
 import HomeIcon from './icons/HomeIcon';
@@ -23,6 +24,7 @@ import ChartBarIcon from './icons/ChartBarIcon';
 import UserPlusIcon from './icons/UserPlusIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import CogIcon from './icons/CogIcon';
+import DocumentTextIcon from './icons/DocumentTextIcon';
 
 // Mock Data
 const MOCK_CALENDARS: HolidayCalendar[] = [
@@ -38,7 +40,7 @@ const MOCK_USERS: User[] = [
     { id: 'USR-ADM-01', name: 'Ethan (Admin)', email: 'ethan@example.com', role: Role.ADMIN, employeeType: EmployeeType.FULL_TIME, leaveBalance: { paid: 30, unpaid: 10 }, holidayCalendarId: 'CAL-IND' },
 ];
 
-type ModuleType = 'dashboard' | 'workforce' | 'payroll' | 'performance' | 'onboarding' | 'admin';
+type ModuleType = 'dashboard' | 'workforce' | 'payroll' | 'performance' | 'onboarding' | 'admin' | 'documentation';
 
 interface NavItem {
     id: ModuleType;
@@ -54,6 +56,7 @@ const NAV_ITEMS: NavItem[] = [
     { id: 'performance', label: 'Performance', icon: ChartBarIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'onboarding', label: 'Onboarding', icon: UserPlusIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'admin', label: 'Admin Console', icon: UserGroupIcon, allowedRoles: [Role.HR_MANAGER, Role.ADMIN] },
+    { id: 'documentation', label: 'Documentation', icon: DocumentTextIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
 ];
 
 const Dashboard: React.FC = () => {
@@ -75,12 +78,35 @@ const Dashboard: React.FC = () => {
 
     const usersById = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
+    // Handle URL query parameters on mount
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab) {
+            const navItem = NAV_ITEMS.find(item => item.id === tab);
+            // Verify if the requested tab exists and the current user has permission to view it
+            if (navItem && navItem.allowedRoles.includes(user.role)) {
+                setActiveModule(tab as ModuleType);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount to handle initial load/deep linking
+
+    const navigateTo = (moduleId: ModuleType) => {
+        setActiveModule(moduleId);
+        setActiveSubTab('overview');
+        
+        // Update URL to reflect the current tab
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', moduleId);
+        window.history.pushState({}, '', url);
+    };
+
     const handleRoleChange = (newRole: Role) => {
         const newUser = users.find(u => u.role === newRole);
         if (newUser) {
             setUser(newUser);
-            setActiveModule('dashboard');
-            setActiveSubTab('overview');
+            navigateTo('dashboard');
         }
     };
 
@@ -134,7 +160,7 @@ const Dashboard: React.FC = () => {
                         return (
                             <button 
                                 key={item.id}
-                                onClick={() => { setActiveModule(item.id); setActiveSubTab('overview'); }} 
+                                onClick={() => navigateTo(item.id)} 
                                 className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md ${activeModule === item.id ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                             >
                                 <Icon className="mr-3 h-5 w-5" /> {item.label}
@@ -178,7 +204,9 @@ const Dashboard: React.FC = () => {
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
                              {NAV_ITEMS.find(i => i.id === activeModule)?.label || 'Dashboard'}
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Manage your {activeModule} tasks and settings.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {activeModule === 'documentation' ? 'Learn about the project.' : `Manage your ${activeModule} tasks and settings.`}
+                        </p>
                     </div>
                     {appSettings.logoUrl && (
                         <div className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm">
@@ -196,6 +224,8 @@ const Dashboard: React.FC = () => {
                 {activeModule === 'performance' && <PerformanceModule user={user} usersById={usersById} />}
                 
                 {activeModule === 'onboarding' && <OnboardingModule user={user} />}
+
+                {activeModule === 'documentation' && <Documentation />}
 
                 {activeModule === 'admin' && [Role.HR_MANAGER, Role.ADMIN].includes(user.role) && (
                     <div className="space-y-6">
