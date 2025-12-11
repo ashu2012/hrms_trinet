@@ -194,7 +194,7 @@ const Dashboard: React.FC = () => {
                          <select 
                             value={user.role} 
                             onChange={(e) => handleRoleChange(e.target.value as Role)}
-                            className="w-full text-xs p-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 shadow-sm"
+                            className="w-full text-xs p-2 border rounded bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 shadow-sm"
                         >
                             {Object.values(Role).map(r => <option key={r} value={r}>{r}</option>)}
                          </select>
