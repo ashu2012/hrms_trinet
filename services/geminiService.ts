@@ -1,9 +1,8 @@
+import { GoogleGenAI, GenerateContentResponse, Type, Modality, Chat } from "@google/genai";
+import { EmployeeType, type KycFormData, type UploadedFile, type VerificationResult, type LeavePolicy, type User } from '../types';
 
-import { GoogleGenAI, GenerateContentResponse, Type, Modality } from "@google/genai";
-// FIX: Import EmployeeType enum to use its values.
-import { EmployeeType, type KycFormData, type UploadedFile, type VerificationResult, type LeavePolicy } from '../types';
-
-const API_KEY = process.env.API_KEY;
+// Safely access process.env to avoid "Uncaught ReferenceError: process is not defined" in browser
+const API_KEY = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : '';
 
 if (!API_KEY) {
   console.warn("API_KEY environment variable not set. Using a placeholder. AI features will not work.");
@@ -32,7 +31,6 @@ export const analyzeKycDocument = async (
   };
 
   const textPart = {
-    // FIX: Removed JSON instructions from prompt as responseSchema is now used.
     text: `Analyze this KYC document. Extract the full name, full address, and document ID number. Compare the extracted information with the following user-submitted data:
     - Full Name: ${userFormData.fullName}
     - Address: ${userFormData.address}
@@ -45,7 +43,6 @@ export const analyzeKycDocument = async (
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts: [imagePart, textPart] },
-      // FIX: Use responseSchema to enforce JSON output structure for more reliable parsing.
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -110,9 +107,7 @@ export const createLeavePolicyFromText = async (description: string): Promise<Le
     return {
         policyName: "Mock Generated Policy",
         rules: [
-            // FIX: Use EmployeeType enum instead of string literals to fix type error.
             { employeeType: EmployeeType.FULL_TIME, probationMonths: 3, paidLeaveDays: 12, unpaidLeaveDays: 5, accrualRatePerMonth: 1 },
-            // FIX: Use EmployeeType enum instead of string literals to fix type error.
             { employeeType: EmployeeType.CONTRACT, probationMonths: 0, paidLeaveDays: 0, unpaidLeaveDays: 10, accrualRatePerMonth: 0 }
         ]
     };
@@ -161,5 +156,58 @@ export const createLeavePolicyFromText = async (description: string): Promise<Le
   } catch (error) {
     console.error("Error creating leave policy:", error);
     return null;
+  }
+};
+
+export const createHRChat = (user: User): Chat => {
+  const systemInstruction = `You are the AI Assistant for Gemini HRMS. 
+  You are talking to ${user.name}, who is a ${user.role} (${user.employeeType}).
+  
+  Their current leave balance is:
+  - Paid Leave: ${user.leaveBalance.paid} days
+  - Unpaid Leave: ${user.leaveBalance.unpaid} days
+  
+  You can answer questions about:
+  - Their leave balance.
+  - General HR policies (assume standard policies: 20 days paid leave for full-time, pro-rated for others).
+  - Upcoming holidays (Republic Day, Independence Day, etc.).
+  
+  Keep answers concise, professional, and helpful. If you don't know something specific (like their exact salary), say you don't have access to that private financial data right now.`;
+
+  return ai.chats.create({
+    model: 'gemini-2.5-flash',
+    config: {
+      systemInstruction: systemInstruction,
+    },
+  });
+};
+
+export const generateJobDescription = async (title: string, department: string, requirements: string): Promise<string> => {
+  if (!API_KEY) {
+      await new Promise(res => setTimeout(res, 2000));
+      return `Job Title: ${title}\nDepartment: ${department}\n\nThis is a mock generated job description based on requirements: ${requirements}.\n\nResponsibilities:\n- Item 1\n- Item 2\n\nQualifications:\n- Skill A\n- Skill B`;
+  }
+
+  const prompt = `Write a comprehensive and professional job description for the position of "${title}" in the "${department}" department. 
+  
+  Key Requirements/Skills: ${requirements}
+  
+  Structure the response with:
+  1. Role Overview
+  2. Key Responsibilities (bullet points)
+  3. Required Qualifications (bullet points)
+  4. Why Join Us
+  
+  Keep the tone professional and engaging. Return the result as plain text with Markdown formatting.`;
+
+  try {
+      const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+      });
+      return response.text;
+  } catch (error) {
+      console.error("Error generating JD:", error);
+      return "Failed to generate description.";
   }
 };

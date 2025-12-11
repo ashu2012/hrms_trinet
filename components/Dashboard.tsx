@@ -15,6 +15,8 @@ import PerformanceModule from './PerformanceModule';
 import OnboardingModule from './OnboardingModule';
 import WorkforceModule from './WorkforceModule';
 import Documentation from './Documentation';
+import AiAssistant from './AiAssistant';
+import RecruitmentModule from './RecruitmentModule';
 
 // Icons
 import HomeIcon from './icons/HomeIcon';
@@ -25,6 +27,8 @@ import UserPlusIcon from './icons/UserPlusIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import CogIcon from './icons/CogIcon';
 import DocumentTextIcon from './icons/DocumentTextIcon';
+import ChatBubbleLeftRightIcon from './icons/ChatBubbleLeftRightIcon';
+import MegaphoneIcon from './icons/MegaphoneIcon';
 
 // Mock Data
 const MOCK_CALENDARS: HolidayCalendar[] = [
@@ -40,7 +44,7 @@ const MOCK_USERS: User[] = [
     { id: 'USR-ADM-01', name: 'Ethan (Admin)', email: 'ethan@example.com', role: Role.ADMIN, employeeType: EmployeeType.FULL_TIME, leaveBalance: { paid: 30, unpaid: 10 }, holidayCalendarId: 'CAL-IND' },
 ];
 
-type ModuleType = 'dashboard' | 'workforce' | 'payroll' | 'performance' | 'onboarding' | 'admin' | 'documentation';
+type ModuleType = 'dashboard' | 'workforce' | 'payroll' | 'performance' | 'onboarding' | 'recruitment' | 'admin' | 'documentation' | 'assistant';
 
 interface NavItem {
     id: ModuleType;
@@ -51,10 +55,12 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: HomeIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
+    { id: 'assistant', label: 'AI Assistant', icon: ChatBubbleLeftRightIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'workforce', label: 'Workforce', icon: BriefcaseIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'payroll', label: 'Payroll', icon: CurrencyDollarIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'performance', label: 'Performance', icon: ChartBarIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
     { id: 'onboarding', label: 'Onboarding', icon: UserPlusIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
+    { id: 'recruitment', label: 'Recruitment', icon: MegaphoneIcon, allowedRoles: [Role.HR_MANAGER, Role.ADMIN] },
     { id: 'admin', label: 'Admin Console', icon: UserGroupIcon, allowedRoles: [Role.HR_MANAGER, Role.ADMIN] },
     { id: 'documentation', label: 'Documentation', icon: DocumentTextIcon, allowedRoles: [Role.EMPLOYEE, Role.MANAGER, Role.HR_MANAGER, Role.ADMIN] },
 ];
@@ -217,6 +223,8 @@ const Dashboard: React.FC = () => {
 
                 {activeModule === 'dashboard' && renderDashboardOverview()}
                 
+                {activeModule === 'assistant' && <AiAssistant user={user} />}
+
                 {activeModule === 'workforce' && <WorkforceModule user={user} usersById={usersById} theme={theme} />}
                 
                 {activeModule === 'payroll' && <PayrollModule user={user} />}
@@ -224,6 +232,8 @@ const Dashboard: React.FC = () => {
                 {activeModule === 'performance' && <PerformanceModule user={user} usersById={usersById} />}
                 
                 {activeModule === 'onboarding' && <OnboardingModule user={user} />}
+
+                {activeModule === 'recruitment' && <RecruitmentModule />}
 
                 {activeModule === 'documentation' && <Documentation />}
 
