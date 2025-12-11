@@ -29,6 +29,8 @@ import CogIcon from './icons/CogIcon';
 import DocumentTextIcon from './icons/DocumentTextIcon';
 import ChatBubbleLeftRightIcon from './icons/ChatBubbleLeftRightIcon';
 import MegaphoneIcon from './icons/MegaphoneIcon';
+import Bars3Icon from './icons/Bars3Icon';
+import XMarkIcon from './icons/XMarkIcon';
 
 // Mock Data
 const MOCK_CALENDARS: HolidayCalendar[] = [
@@ -76,6 +78,7 @@ const Dashboard: React.FC = () => {
     // Navigation State
     const [activeModule, setActiveModule] = useState<ModuleType>('dashboard');
     const [activeSubTab, setActiveSubTab] = useState('overview'); 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { theme, toggleTheme } = useTheme();
     
@@ -101,6 +104,7 @@ const Dashboard: React.FC = () => {
     const navigateTo = (moduleId: ModuleType) => {
         setActiveModule(moduleId);
         setActiveSubTab('overview');
+        setIsMobileMenuOpen(false); // Close mobile menu on navigation
         
         // Update URL to reflect the current tab
         const url = new URL(window.location.href);
@@ -154,10 +158,30 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="h-screen w-screen flex bg-brand-bg dark:bg-gray-900 transition-colors duration-200 overflow-hidden">
+            
+            {/* MOBILE OVERLAY */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-gray-900/50 z-40 md:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* SIDEBAR */}
-            <aside className="w-64 bg-brand-surface dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shrink-0 z-10">
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-brand-surface dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 
+                flex flex-col transition-transform duration-300 ease-in-out
+                md:static md:translate-x-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
                     <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400 truncate">{appSettings.companyName}</span>
+                    <button 
+                        onClick={() => setIsMobileMenuOpen(false)} 
+                        className="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                        <XMarkIcon className="h-6 w-6" />
+                    </button>
                 </div>
                 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
@@ -204,18 +228,26 @@ const Dashboard: React.FC = () => {
             </aside>
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 p-8 overflow-y-auto bg-brand-bg dark:bg-gray-900 relative">
-                <header className="mb-8 flex justify-between items-start">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
-                             {NAV_ITEMS.find(i => i.id === activeModule)?.label || 'Dashboard'}
-                        </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {activeModule === 'documentation' ? 'Learn about the project.' : `Manage your ${activeModule} tasks and settings.`}
-                        </p>
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto bg-brand-bg dark:bg-gray-900 relative">
+                <header className="mb-6 md:mb-8 flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                            <Bars3Icon className="h-6 w-6" />
+                        </button>
+                        <div>
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
+                                {NAV_ITEMS.find(i => i.id === activeModule)?.label || 'Dashboard'}
+                            </h1>
+                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+                                {activeModule === 'documentation' ? 'Learn about the project.' : `Manage your ${activeModule} tasks and settings.`}
+                            </p>
+                        </div>
                     </div>
                     {appSettings.logoUrl && (
-                        <div className="bg-brand-surface dark:bg-gray-800 p-2 rounded-lg shadow-sm">
+                        <div className="bg-brand-surface dark:bg-gray-800 p-2 rounded-lg shadow-sm hidden md:block">
                             <img src={appSettings.logoUrl} alt="Company Logo" className="h-12 w-auto object-contain" />
                         </div>
                     )}
@@ -239,8 +271,8 @@ const Dashboard: React.FC = () => {
 
                 {activeModule === 'admin' && [Role.HR_MANAGER, Role.ADMIN].includes(user.role) && (
                     <div className="space-y-6">
-                        <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
-                            <nav className="-mb-px flex space-x-8">
+                        <div className="border-b border-gray-200 dark:border-gray-700 mb-4 overflow-x-auto">
+                            <nav className="-mb-px flex space-x-8 min-w-max">
                                 <button onClick={() => setActiveSubTab('policy')} className={`${activeSubTab === 'policy' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Policy Engine</button>
                                 <button onClick={() => setActiveSubTab('assignments')} className={`${activeSubTab === 'assignments' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}>Assignments</button>
                                 {user.role === Role.ADMIN && (
